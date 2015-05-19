@@ -32,24 +32,25 @@ struct VertexShaderOutput
 {
 	float4 Position2D : POSITION0;
 	float4 Color : COLOR0;
+	float2 Texcoord : TEXCOORD0;
 };
 
 //------------------------------------------ Functions ------------------------------------------
 
 // Implement the Coloring using normals assignment here
-float4 NormalColor(VertexShaderInput Input)
+float4 NormalColor(VertexShaderOutput input)
 {
-	//return Normal;
-	float4 Color = Input.Color.rgba;
-
-		return Color;
-	return float4(0, 0.3, 0, 1);
+	return input.Color;
 }
 
 // Implement the Procedural texturing assignment here
-float4 ProceduralColor(/* parameter(s) */)
+float4 ProceduralColor(VertexShaderOutput input, int x, int y)
 {
-	return float4(0, 0, 0, 1);
+	float bit = (x + y) % 2;
+	return float4(((bit - 0.5) * 2) * input.Color.r,
+				  ((bit - 0.5) * 2) * input.Color.g,
+			      ((bit - 0.5) * 2) * input.Color.b,
+				  1); 
 }
 
 //---------------------------------------- Technique: Simple ----------------------------------------
@@ -61,17 +62,18 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 
 	// Do the matrix multiplications for perspective projection and the world transform
 	float4 worldPosition = mul(input.Position3D, World);
-		float4 viewPosition = mul(worldPosition, View);
-		output.Position2D = mul(viewPosition, Projection);
+	float4 viewPosition = mul(worldPosition, View);
+	output.Position2D = mul(viewPosition, Projection);
+
+	output.Color = input.Normal.xyzw;
+	output.Texcoord = output.Position2D.xy;
 
 	return output;
 }
 
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
-	float4 Color = input.Color;
-
-	return NormalColor(VertexShaderOutput);
+	return ProceduralColor(input, input.Texcoord.x, input.Texcoord.y);
 }
 
 technique Simple
