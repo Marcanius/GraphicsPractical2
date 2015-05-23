@@ -9,8 +9,8 @@
 // Matrices for 3D perspective projection 
 float4x4 View, Projection, World;
 float4 DiffuseColor, AmbientColor;
-float3 LightDirection;
-float SpecularIntensity, AmbientIntensity;
+float3 LightPosition;
+float DiffuseIntensity, AmbientIntensity;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -51,9 +51,9 @@ float4 ProceduralColor(VertexShaderOutput input, int x, int y)
 {
 	float bit = ((cos(x % 2) + sin(y % 2)) * (cos(x % 2) + cos(y % 2))) % 2;
 	return float4(((bit - 0.5) * 2) * input.Color.r,
-				  ((bit - 0.5) * 2) * input.Color.g,
-			      ((bit - 0.5) * 2) * input.Color.b,
-				  1); 
+		((bit - 0.5) * 2) * input.Color.g,
+		((bit - 0.5) * 2) * input.Color.b,
+		1);
 }
 
 //---------------------------------------- Technique: Simple ----------------------------------------
@@ -65,18 +65,18 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 
 	// Do the matrix multiplications for perspective projection and the world transform
 	float4 worldPosition = mul(input.Position3D, World);
-	float4 viewPosition = mul(worldPosition, View);
-	output.Position2D = mul(viewPosition, Projection);
+		float4 viewPosition = mul(worldPosition, View);
+		output.Position2D = mul(viewPosition, Projection);
 
 	float3x3 rotationAndScale = (float3x3)World;
-	float3 transformNormal = mul(input.Normal, rotationAndScale);
-	float3 transformNormalN = normalize(transformNormal);
-	float lightNormalDot = dot(transformNormalN, LightDirection);
+		float3 transformNormal = mul(input.Normal, rotationAndScale);
+		float3 transformNormalN = normalize(transformNormal);
+		float lightNormalDot = dot(normalize(LightPosition), transformNormalN);
 
-	float4 lambertShading = DiffuseColor * SpecularIntensity * max(float(0), lightNormalDot);
+	float4 lambertShading = DiffuseColor * DiffuseIntensity * max(0.0, lightNormalDot);
 		float4 ambientLight = AmbientColor * AmbientIntensity;
 
-		output.Color = max(lambertShading, ambientLight);
+		output.Color = lambertShading + ambientLight;
 	output.Texcoord = input.Position3D.xy * 7;
 
 	return output;
