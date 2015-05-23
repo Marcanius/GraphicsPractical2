@@ -71,7 +71,9 @@ namespace GraphicsPractical2
             modelMaterial.DiffuseColor = Color.Red;
             modelMaterial.SpecularIntensity = 0.7f;
             modelMaterial.LightDirection = new Vector3(1, 1, 1);
-
+            modelMaterial.AmbientIntensity = 0.2f;
+            modelMaterial.AmbientColor = Color.Red;
+            
             modelMaterial.SetEffectParameters(effect);
             // Load the model and let it use the "Simple" effect
             this.model = this.Content.Load<Model>("Models/Teapot");

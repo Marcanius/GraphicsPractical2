@@ -8,9 +8,9 @@
 
 // Matrices for 3D perspective projection 
 float4x4 View, Projection, World;
-float4 DiffuseColor;
+float4 DiffuseColor, AmbientColor;
 float3 LightDirection;
-float SpecularIntensity;
+float SpecularIntensity, AmbientIntensity;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -73,8 +73,10 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 	float3 transformNormalN = normalize(transformNormal);
 	float lightNormalDot = dot(transformNormalN, LightDirection);
 
+	float4 lambertShading = DiffuseColor * SpecularIntensity * max(float(0), lightNormalDot);
+		float4 ambientLight = AmbientColor * AmbientIntensity;
 
-	output.Color = DiffuseColor * SpecularIntensity * max(float(0), lightNormalDot);
+		output.Color = max(lambertShading, ambientLight);
 	output.Texcoord = input.Position3D.xy * 7;
 
 	return output;
