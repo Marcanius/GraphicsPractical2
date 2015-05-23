@@ -66,11 +66,19 @@ namespace GraphicsPractical2
             this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
             // Load the "Simple" effect
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
+            //Filling modelMaterial
+            modelMaterial = new Material();
+            modelMaterial.DiffuseColor = Color.Red;
+            modelMaterial.SpecularIntensity = 0.7f;
+            modelMaterial.LightDirection = new Vector3(1, 1, 1);
+
+            modelMaterial.SetEffectParameters(effect);
             // Load the model and let it use the "Simple" effect
             this.model = this.Content.Load<Model>("Models/Teapot");
             this.model.Meshes[0].MeshParts[0].Effect = effect;
             // Setup the quad
             this.setupQuad();
+
         }
 
         /// <summary>

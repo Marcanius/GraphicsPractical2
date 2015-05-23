@@ -8,6 +8,9 @@
 
 // Matrices for 3D perspective projection 
 float4x4 View, Projection, World;
+float4 DiffuseColor;
+float3 LightDirection;
+float SpecularIntensity;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -46,7 +49,7 @@ float4 NormalColor(VertexShaderOutput input)
 // Implement the Procedural texturing assignment here
 float4 ProceduralColor(VertexShaderOutput input, int x, int y)
 {
-	float bit = (x + y) % 2;
+	float bit = ((cos(x % 2) + sin(y % 2)) * (cos(x % 2) + cos(y % 2))) % 2;
 	return float4(((bit - 0.5) * 2) * input.Color.r,
 				  ((bit - 0.5) * 2) * input.Color.g,
 			      ((bit - 0.5) * 2) * input.Color.b,
@@ -65,15 +68,22 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 	float4 viewPosition = mul(worldPosition, View);
 	output.Position2D = mul(viewPosition, Projection);
 
-	output.Color = input.Normal.xyzw;
-	output.Texcoord = output.Position2D.xy;
+	float3x3 rotationAndScale = (float3x3)World;
+	float3 transformNormal = mul(input.Normal, rotationAndScale);
+	float3 transformNormalN = normalize(transformNormal);
+	float lightNormalDot = dot(transformNormalN, LightDirection);
+
+
+	output.Color = DiffuseColor * SpecularIntensity * max(float(0), lightNormalDot);
+	output.Texcoord = input.Position3D.xy * 7;
 
 	return output;
 }
 
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
-	return ProceduralColor(input, input.Texcoord.x, input.Texcoord.y);
+	return NormalColor(input);
+	//return ProceduralColor(input, input.Texcoord.x, input.Texcoord.y);
 }
 
 technique Simple
