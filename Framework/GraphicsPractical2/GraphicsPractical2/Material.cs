@@ -33,16 +33,18 @@ namespace GraphicsPractical2
         //public Texture NormalMap;
         // The normal displacement factor, to apply the effect in a subtle manner
         //public float DisplacementFactor;
+
         // Color of the specular highlight (mostly equal to the color of the light source)
-        //public Color SpecularColor;
+        public Color SpecularColor;
         // The intensity factor of the specular highlight, controls it's size
-        //public float SpecularIntensity;
+        public float SpecularIntensity;
         // The power term of the specular highlight, controls it's smoothness
-        //public float SpecularPower;
+        public float SpecularPower;
+
         // Special surface color, use normals as color
-        //public bool NormalColoring;
+        public bool NormalColoring;
         // Special surface color, procedural colors
-        //public bool ProceduralColoring;
+        public bool ProceduralColoring;
 
 
         // Using this function requires all these elements to be present as top-level variables in the shader code. Comment out the ones that you don't use
@@ -59,12 +61,12 @@ namespace GraphicsPractical2
             //effect.Parameters["NormalMap"].SetValue(this.NormalMap);
             //effect.Parameters["DisplacementFactor"].SetValue(this.DisplacementFactor);
 
-            //effect.Parameters["SpecularColor"].SetValue(this.SpecularColor.ToVector4());
-            //effect.Parameters["SpecularIntensity"].SetValue(this.SpecularIntensity);
-            //effect.Parameters["SpecularPower"].SetValue(this.SpecularPower);
+            effect.Parameters["SpecularColor"].SetValue(this.SpecularColor.ToVector4());
+            effect.Parameters["SpecularIntensity"].SetValue(this.SpecularIntensity);
+            effect.Parameters["SpecularPower"].SetValue(this.SpecularPower);
 
-            //effect.Parameters["NormalColoring"].SetValue(this.NormalColoring);
-            //effect.Parameters["ProceduralColoring"].SetValue(this.ProceduralColoring);
+            effect.Parameters["NormalColoring"].SetValue(this.NormalColoring);
+            effect.Parameters["ProceduralColoring"].SetValue(this.ProceduralColoring);
 
             //effect.Parameters["HasTexture"].SetValue(this.DiffuseTexture != null);
             //effect.Parameters["HasNormalMap"].SetValue(this.NormalMap != null);

@@ -68,14 +68,20 @@ namespace GraphicsPractical2
             // Load the "Simple" effect
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
 
-            //Filling modelMaterial
-            //modelMaterial = new Material();
+            // Filling modelMaterial.
+            modelMaterial.NormalColoring = true;
+            modelMaterial.ProceduralColoring = false;
+
             modelMaterial.DiffuseColor = Color.Red;
             modelMaterial.DiffuseIntensity = 1f;
             modelMaterial.LightPosition = new Vector3(50, 50, 50);
 
             modelMaterial.AmbientIntensity = 0.2f;
             modelMaterial.AmbientColor = Color.Red;
+
+            modelMaterial.SpecularColor = Color.White;
+            modelMaterial.SpecularIntensity = 2.0f;
+            modelMaterial.SpecularPower = 25.0f;
 
             modelMaterial.SetEffectParameters(effect);
 
