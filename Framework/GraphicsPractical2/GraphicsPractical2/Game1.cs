@@ -29,6 +29,7 @@ namespace GraphicsPractical2
         private VertexPositionNormalTexture[] quadVertices;
         private short[] quadIndices;
         private Matrix quadTransform;
+        private Texture2D cobblestone;
 
         public Game1()
         {
@@ -64,6 +65,9 @@ namespace GraphicsPractical2
         {
             // Create a SpriteBatch object
             this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
+
+            // Load the texture for the quad
+            cobblestone = Content.Load<Texture2D>("Textures/CobblestonesDiffuse");
 
             // Load the "Simple" effect
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
@@ -135,8 +139,8 @@ namespace GraphicsPractical2
         protected override void Draw(GameTime gameTime)
         {
             // Clear the screen in a predetermined color and clear the depth buffer
-            this.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DeepSkyBlue, 1.0f, 0);
-            
+            this.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DeepSkyBlue, 1.0f, 0);           
+
             // Get the model's only mesh
             ModelMesh mesh = this.model.Meshes[0];
             Effect effect = mesh.Effects[0];
@@ -148,6 +152,11 @@ namespace GraphicsPractical2
             this.camera.SetEffectParameters(effect);
             effect.Parameters["World"].SetValue(World);
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
+
+            // Draw the quad 
+            this.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, this.quadVertices.Length, 0, this.quadIndices.Length);
+
+
             // Draw the model
             mesh.Draw();
 

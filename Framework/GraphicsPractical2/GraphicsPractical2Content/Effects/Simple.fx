@@ -11,7 +11,8 @@ float4x4 View, Projection, World, WorldIT;
 float4 DiffuseColor, AmbientColor, SpecularColor;
 float3 LightPosition, CameraPosition;
 float DiffuseIntensity, AmbientIntensity, SpecularIntensity, SpecularPower;
-bool NormalColoring, ProceduralColoring;
+bool HasTexture, NormalColoring, ProceduralColoring;
+texture CobblestonesDiffuse;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -38,6 +39,7 @@ struct VertexShaderOutput
 	float4 Color : COLOR0;
 	float4 Color2: COLOR1;
 	float2 ProceduralCoord : TEXCOORD0;
+	float2 UVcoords : TEXCOORD1;
 };
 
 //------------------------------------------ Functions ------------------------------------------
@@ -134,17 +136,29 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 
 	output.ProceduralCoord = input.Position3D.xy;
 
+	output.UVcoords = input.Position3D.xy + 1 / 2;
+
 	return output;
 }
 
+
+float2 sampleCobblestone(float2 UVcoords : TEXCOORD0) : COLOR
+{
+	return tex2D(CobblestonesDiffuse);
+}
+
+
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
-	if (NormalColoring)
-	return NormalColor(input);
+	if (HasTexture)
+		return sampleCobblestone(input.);
+	else if (NormalColoring)
+		return NormalColor(input);
 	else if (ProceduralColoring)
 		return ProceduralColor(input, input.ProceduralCoord.x, input.ProceduralCoord.y);
 	else
 		return (float4)0;
+
 }
 
 technique Simple

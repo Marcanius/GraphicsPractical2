@@ -27,7 +27,7 @@ namespace GraphicsPractical2
         // The intensity of the diffuse reflection
         public float DiffuseIntensity;
         // The texture of the surface
-        //public Texture DiffuseTexture;
+        public Texture DiffuseTexture;
 
         // The normal displacement texture
         //public Texture NormalMap;
@@ -68,7 +68,7 @@ namespace GraphicsPractical2
             effect.Parameters["NormalColoring"].SetValue(this.NormalColoring);
             effect.Parameters["ProceduralColoring"].SetValue(this.ProceduralColoring);
 
-            //effect.Parameters["HasTexture"].SetValue(this.DiffuseTexture != null);
+            effect.Parameters["HasTexture"].SetValue(this.DiffuseTexture != null);
             //effect.Parameters["HasNormalMap"].SetValue(this.NormalMap != null);
         }
     }
