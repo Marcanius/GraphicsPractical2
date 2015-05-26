@@ -69,8 +69,8 @@ namespace GraphicsPractical2
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
 
             // Filling modelMaterial.
-            modelMaterial.NormalColoring = true;
-            modelMaterial.ProceduralColoring = false;
+            modelMaterial.NormalColoring = false;
+            modelMaterial.ProceduralColoring = true;
 
             modelMaterial.DiffuseColor = Color.Red;
             modelMaterial.DiffuseIntensity = 1f;

@@ -36,6 +36,7 @@ struct VertexShaderOutput
 {
 	float4 Position2D : POSITION0;
 	float4 Color : COLOR0;
+	float4 Color2: COLOR1;
 	float2 ProceduralCoord : TEXCOORD0;
 };
 
@@ -48,23 +49,28 @@ float4 NormalColor(VertexShaderOutput input)
 }
 
 // Implement the Procedural texturing assignment here
-float4 ProceduralColor(VertexShaderOutput input, int x, int y)
+float4 ProceduralColor(VertexShaderOutput input, float x, float y)
 {
-	int x2 = (x) % 2;
-	int y2 = (y) % 2;
+	int x2 = (int)(abs(x) * 7) % 2;
+	int y2 = (int)(abs(y) * 7) % 2;
 
-	if (x2 != y2)
-		return float4(
-		input.Color.r,
-		input.Color.g,
-		input.Color.b,
-		1);
+	if (sign(x) != sign(y))
+	{
+		if (x2 != y2)
+			return input.Color2;
+		else
+			return input.Color;
+
+	}
 	else
-		return float4(
-		1 - input.Color.r,
-		1 - input.Color.g,
-		1 - input.Color.b,
-		1);
+	{
+		if (x2 == y2)
+			return input.Color2;
+		else
+			return input.Color;
+	}
+
+
 }
 
 float3 TransformNormal(VertexShaderInput Input, float4x4 World)
@@ -123,7 +129,10 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 		+ DiffuseLighting(LightPosition, transformNormalN)
 		+ SpecularLighting(LightPosition, CameraPosition, input.Position3D, transformNormalN);
 
-	output.ProceduralCoord = input.Position3D.xy * 7;
+	output.Color = input.Normal;
+	output.Color2 = -input.Normal;
+
+	output.ProceduralCoord = input.Position3D.xy;
 
 	return output;
 }
@@ -133,7 +142,7 @@ float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 	if (NormalColoring)
 	return NormalColor(input);
 	else if (ProceduralColoring)
-		return ProceduralColor(input, input.ProceduralCoord.x * 7, input.ProceduralCoord.y * 7);
+		return ProceduralColor(input, input.ProceduralCoord.x, input.ProceduralCoord.y);
 	else
 		return (float4)0;
 }
