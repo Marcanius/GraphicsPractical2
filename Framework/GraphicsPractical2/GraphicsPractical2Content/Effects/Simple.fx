@@ -7,7 +7,7 @@
 // Top level variables can and have to be set at runtime
 
 // Matrices for 3D perspective projection 
-float4x4 View, Projection, World;
+float4x4 View, Projection, World, WorldIT;
 float4 DiffuseColor, AmbientColor, SpecularColor;
 float3 LightPosition, CameraPosition;
 float DiffuseIntensity, AmbientIntensity, SpecularIntensity, SpecularPower;
@@ -73,9 +73,9 @@ float4 ProceduralColor(VertexShaderOutput input, float x, float y)
 
 }
 
-float3 TransformNormal(VertexShaderInput Input, float4x4 World)
+float3 TransformNormal(VertexShaderInput Input)
 {
-	float3x3 rotationAndScale = (float3x3)World;
+	float3x3 rotationAndScale = WorldIT;
 	float3 normalT = mul(Input.Normal, rotationAndScale);
 	return normalize(normalT);
 }
@@ -121,7 +121,7 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 		output.Position2D = mul(viewPosition, Projection);
 
 	// Matrixing the normal Vector.
-	float3 transformNormalN = TransformNormal(input, World);
+	float3 transformNormalN = TransformNormal(input);
 
 		// Outputting the color.
 		output.Color =
@@ -129,8 +129,8 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 		+ DiffuseLighting(LightPosition, transformNormalN)
 		+ SpecularLighting(LightPosition, CameraPosition, input.Position3D, transformNormalN);
 
-	output.Color = input.Normal;
-	output.Color2 = -input.Normal;
+	//output.Color = input.Normal;
+	//output.Color2 = -input.Normal;
 
 	output.ProceduralCoord = input.Position3D.xy;
 

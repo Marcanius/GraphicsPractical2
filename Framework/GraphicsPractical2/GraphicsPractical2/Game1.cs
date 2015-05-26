@@ -69,8 +69,8 @@ namespace GraphicsPractical2
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
 
             // Filling modelMaterial.
-            modelMaterial.NormalColoring = false;
-            modelMaterial.ProceduralColoring = true;
+            modelMaterial.NormalColoring = true;
+            modelMaterial.ProceduralColoring = false;
 
             modelMaterial.DiffuseColor = Color.Red;
             modelMaterial.DiffuseIntensity = 1f;
@@ -140,12 +140,14 @@ namespace GraphicsPractical2
             // Get the model's only mesh
             ModelMesh mesh = this.model.Meshes[0];
             Effect effect = mesh.Effects[0];
+            Matrix World = Matrix.CreateScale(10.0f, 6.5f, 2.5f);
 
             // Set the effect parameters
             effect.CurrentTechnique = effect.Techniques["Simple"];
             // Matrices for 3D perspective projection
             this.camera.SetEffectParameters(effect);
-            effect.Parameters["World"].SetValue(Matrix.CreateScale(10.0f));
+            effect.Parameters["World"].SetValue(World);
+            effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
             // Draw the model
             mesh.Draw();
 
