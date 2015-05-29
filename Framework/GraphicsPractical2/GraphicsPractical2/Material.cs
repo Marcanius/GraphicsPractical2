@@ -56,7 +56,7 @@ namespace GraphicsPractical2
             effect.Parameters["LightPosition"].SetValue(this.LightPosition);
             effect.Parameters["DiffuseColor"].SetValue(this.DiffuseColor.ToVector4());
             effect.Parameters["DiffuseIntensity"].SetValue(this.DiffuseIntensity);
-            //effect.Parameters["DiffuseTexture"].SetValue(this.DiffuseTexture);
+            effect.Parameters["DiffuseTexture"].SetValue(this.DiffuseTexture);
 
             //effect.Parameters["NormalMap"].SetValue(this.NormalMap);
             //effect.Parameters["DisplacementFactor"].SetValue(this.DisplacementFactor);

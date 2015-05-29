@@ -79,6 +79,7 @@ namespace GraphicsPractical2
             modelMaterial.DiffuseColor = Color.Red;
             modelMaterial.DiffuseIntensity = 1f;
             modelMaterial.LightPosition = new Vector3(50, 50, 50);
+            modelMaterial.DiffuseTexture = cobblestone;
 
             modelMaterial.AmbientIntensity = 0.2f;
             modelMaterial.AmbientColor = Color.Red;
@@ -110,17 +111,21 @@ namespace GraphicsPractical2
 
             this.quadVertices = new VertexPositionNormalTexture[4];
             // Top left
-            this.quadVertices[0].Position = new Vector3(-1, 0, -1);
+            this.quadVertices[0].Position = new Vector3(-10, -1.6f, -10);
             this.quadVertices[0].Normal = quadNormal;
+            this.quadVertices[0].TextureCoordinate = new Vector2(0, 0);
             // Top right
-            this.quadVertices[1].Position = new Vector3(1, 0, -1);
+            this.quadVertices[1].Position = new Vector3(10, -1.6f, -10);
             this.quadVertices[1].Normal = quadNormal;
+            this.quadVertices[1].TextureCoordinate = new Vector2(1, 0);
             // Bottom left
-            this.quadVertices[2].Position = new Vector3(-1, 0, 1);
+            this.quadVertices[2].Position = new Vector3(-10, -1.6f, 10);
             this.quadVertices[2].Normal = quadNormal;
+            this.quadVertices[2].TextureCoordinate = new Vector2(0, 1);
             // Bottom right
-            this.quadVertices[3].Position = new Vector3(1, 0, 1);
+            this.quadVertices[3].Position = new Vector3(10, -1.6f, 10);
             this.quadVertices[3].Normal = quadNormal;
+            this.quadVertices[3].TextureCoordinate = new Vector2(1, 1);
 
             this.quadIndices = new short[] { 0, 1, 2, 1, 2, 3 };
             this.quadTransform = Matrix.CreateScale(scale);
@@ -144,7 +149,7 @@ namespace GraphicsPractical2
             // Get the model's only mesh
             ModelMesh mesh = this.model.Meshes[0];
             Effect effect = mesh.Effects[0];
-            Matrix World = Matrix.CreateScale(10.0f, 6.5f, 2.5f);
+            Matrix World = Matrix.CreateScale(10.0f);
 
             // Set the effect parameters
             effect.CurrentTechnique = effect.Techniques["Simple"];
@@ -153,10 +158,15 @@ namespace GraphicsPractical2
             effect.Parameters["World"].SetValue(World);
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
 
+            foreach (EffectPass p in effect.CurrentTechnique.Passes)
+                p.Apply();
+
+            effect.Parameters["HasTexture"].SetValue(true);
+
             // Draw the quad 
-            this.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, this.quadVertices.Length, 0, this.quadIndices.Length);
+            this.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, quadVertices, 0, quadVertices.Length, quadIndices, 0, this.quadIndices.Length / 3);
 
-
+            effect.Parameters["HasTexture"].SetValue(false);
             // Draw the model
             mesh.Draw();
 

@@ -12,7 +12,8 @@ float4 DiffuseColor, AmbientColor, SpecularColor;
 float3 LightPosition, CameraPosition;
 float DiffuseIntensity, AmbientIntensity, SpecularIntensity, SpecularPower;
 bool HasTexture, NormalColoring, ProceduralColoring;
-texture CobblestonesDiffuse;
+texture DiffuseTexture;
+sampler2D cobblestoneSample;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -23,6 +24,7 @@ struct VertexShaderInput
 {
 	float4 Position3D : POSITION0;
 	float4 Normal : NORMAL0;
+	float2 UVcoords : TEXCOORD0;
 };
 
 // The output of the vertex shader. After being passed through the interpolator/rasterizer it is also 
@@ -136,22 +138,23 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 
 	output.ProceduralCoord = input.Position3D.xy;
 
-	output.UVcoords = input.Position3D.xy + 1 / 2;
+	output.UVcoords = input.UVcoords;
+	
 
 	return output;
 }
 
 
-float2 sampleCobblestone(float2 UVcoords : TEXCOORD0) : COLOR
+float4 sampleCobblestone(float2 UVcoords : TEXCOORD0) : COLOR0
 {
-	return tex2D(CobblestonesDiffuse);
+	return tex2D(cobblestoneSample, UVcoords);
 }
 
 
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
 	if (HasTexture)
-		return sampleCobblestone(input.);
+		return sampleCobblestone(input.UVcoords);
 	else if (NormalColoring)
 		return NormalColor(input);
 	else if (ProceduralColoring)
