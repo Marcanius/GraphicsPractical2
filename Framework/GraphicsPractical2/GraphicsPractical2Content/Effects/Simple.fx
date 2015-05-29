@@ -12,8 +12,8 @@ float4 DiffuseColor, AmbientColor, SpecularColor;
 float3 LightPosition, CameraPosition;
 float DiffuseIntensity, AmbientIntensity, SpecularIntensity, SpecularPower;
 bool HasTexture, NormalColoring, ProceduralColoring;
-texture DiffuseTexture;
-sampler2D cobblestoneSample;
+Texture2D DiffuseTexture;
+SamplerState cobblestoneSample;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -33,7 +33,7 @@ struct VertexShaderInput
 // you get as input for the pixel shader. A vertex shader has a single vertex as input, the pixel 
 // shader has 3 vertices as input, and lets you determine the color of each pixel in the triangle 
 // defined by these three vertices. Therefor, all the values in the struct that you get as input for 
-// the pixel shaders have been linearly interpolated between there three vertices!
+// the pixel shaders have been linearly interpolated between their three vertices!
 // Note 2: You cannot use the data with the POSITION0 semantic in the pixel shader.
 struct VertexShaderOutput
 {
@@ -55,17 +55,18 @@ float4 NormalColor(VertexShaderOutput input)
 // Implement the Procedural texturing assignment here
 float4 ProceduralColor(VertexShaderOutput input, float x, float y)
 {
-	int x2 = (int)(abs(x) * 7) % 2;
-	int y2 = (int)(abs(y) * 7) % 2;
+	int x2 = (int)(abs(x) * 5) % 2;
+	int y2 = (int)(abs(y) * 5) % 2;
 
+	// Topleft and LowerRight Quadrant.
 	if (sign(x) != sign(y))
 	{
 		if (x2 != y2)
 			return input.Color2;
 		else
 			return input.Color;
-
 	}
+	// TopRight and LowerLeft Quadrant.
 	else
 	{
 		if (x2 == y2)
@@ -73,22 +74,23 @@ float4 ProceduralColor(VertexShaderOutput input, float x, float y)
 		else
 			return input.Color;
 	}
-
-
 }
 
+// Transforming the normals, using the Inverse-Transposed World Matrix
 float3 TransformNormal(VertexShaderInput Input)
 {
 	float3x3 rotationAndScale = WorldIT;
-	float3 normalT = mul(Input.Normal, rotationAndScale);
-	return normalize(normalT);
+		float3 normalT = mul(Input.Normal, rotationAndScale);
+		return normalize(normalT);
 }
 
+// Ambient Shading
 float4 AmbientLighting()
 {
 	return AmbientColor * AmbientIntensity;
 }
 
+// Lambert Shading
 float4 DiffuseLighting(float3 LightPosition, float3 Normal)
 {
 	// The angle between the light source and the normal vector of the vertex.
@@ -97,6 +99,7 @@ float4 DiffuseLighting(float3 LightPosition, float3 Normal)
 	return DiffuseColor * DiffuseIntensity * max(0.0, LdotNN);
 }
 
+// Blinn-Phong Shading
 float4 SpecularLighting(float3 LightPosition, float3 CameraPosition, float3 VertexPosition, float3 Normal)
 {
 	// Calculate the vector to the light source, and normalize it.
@@ -128,39 +131,42 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 	float3 transformNormalN = TransformNormal(input);
 
 		// Outputting the color.
-		output.Color =
-		AmbientLighting()
-		+ DiffuseLighting(LightPosition, transformNormalN)
-		+ SpecularLighting(LightPosition, CameraPosition, input.Position3D, transformNormalN);
+		if (NormalColoring){
+			output.Color =
+				AmbientLighting()
+				+ DiffuseLighting(LightPosition, transformNormalN)
+				+ SpecularLighting(LightPosition, CameraPosition, input.Position3D, transformNormalN);
+		}
 
-	//output.Color = input.Normal;
-	//output.Color2 = -input.Normal;
+		else if (ProceduralColoring)
+		{
+			output.Color = input.Normal;
+			output.Color2 = -input.Normal;
+			output.ProceduralCoord = input.Position3D.xy;
+		}
 
-	output.ProceduralCoord = input.Position3D.xy;
-
-	output.UVcoords = input.UVcoords;
-	
+	if (HasTexture)
+		output.UVcoords = input.UVcoords;
 
 	return output;
 }
 
-
-float4 sampleCobblestone(float2 UVcoords : TEXCOORD0) : COLOR0
-{
-	return tex2D(cobblestoneSample, UVcoords);
-}
-
-
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
+	// The Quad
 	if (HasTexture)
-		return sampleCobblestone(input.UVcoords);
+	{
+		return DiffuseTexture.Sample(cobblestoneSample, input.UVcoords);
+	}
+	// Use The normals of the Vertices.
 	else if (NormalColoring)
 		return NormalColor(input);
+	// Use a checkerboard pattern.
 	else if (ProceduralColoring)
 		return ProceduralColor(input, input.ProceduralCoord.x, input.ProceduralCoord.y);
+	// Something went wrong, draw White.
 	else
-		return (float4)0;
+		return (float4)1;
 
 }
 

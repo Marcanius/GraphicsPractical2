@@ -157,17 +157,16 @@ namespace GraphicsPractical2
             this.camera.SetEffectParameters(effect);
             effect.Parameters["World"].SetValue(World);
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
-
+            
+            // Draw the quad 
+            effect.Parameters["HasTexture"].SetValue(true);
             foreach (EffectPass p in effect.CurrentTechnique.Passes)
                 p.Apply();
 
-            effect.Parameters["HasTexture"].SetValue(true);
-
-            // Draw the quad 
             this.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, quadVertices, 0, quadVertices.Length, quadIndices, 0, this.quadIndices.Length / 3);
 
-            effect.Parameters["HasTexture"].SetValue(false);
             // Draw the model
+            effect.Parameters["HasTexture"].SetValue(false);
             mesh.Draw();
 
             base.Draw(gameTime);
