@@ -131,7 +131,8 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 	float3 transformNormalN = TransformNormal(input);
 
 		// Outputting the color.
-		if (NormalColoring){
+		if (NormalColoring)
+		{
 			output.Color =
 				AmbientLighting()
 				+ DiffuseLighting(LightPosition, transformNormalN)

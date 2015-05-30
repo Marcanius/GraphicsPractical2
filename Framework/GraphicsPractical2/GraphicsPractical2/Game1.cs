@@ -20,7 +20,7 @@ namespace GraphicsPractical2
 
         // Game objects and variables
         private Camera camera;
-        
+
         // Model
         private Model model;
         private Material modelMaterial;
@@ -30,6 +30,10 @@ namespace GraphicsPractical2
         private short[] quadIndices;
         private Matrix quadTransform;
         private Texture2D cobblestone;
+
+        // Post-Processing
+        Effect postProcessing;
+        RenderTarget2D postRenderTarget;
 
         public Game1()
         {
@@ -58,6 +62,15 @@ namespace GraphicsPractical2
 
             this.IsMouseVisible = true;
 
+            // The rendertarget for the postprocessing.
+            postRenderTarget = new RenderTarget2D(
+                GraphicsDevice,
+                GraphicsDevice.PresentationParameters.BackBufferWidth,
+                GraphicsDevice.PresentationParameters.BackBufferHeight,
+                false,
+                GraphicsDevice.PresentationParameters.BackBufferFormat,
+                DepthFormat.Depth24);
+
             base.Initialize();
         }
 
@@ -71,6 +84,12 @@ namespace GraphicsPractical2
 
             // Load the "Simple" effect
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
+
+            // Load the PostProcesssing effect
+            postProcessing = this.Content.Load<Effect>("Effects/PostProcessing");
+            postProcessing.Parameters["gamma"].SetValue(1.5f);
+
+            empty = this.Content.Load<Texture2D>("Textures/Empty");
 
             // Filling modelMaterial.
             modelMaterial.NormalColoring = true;
@@ -144,7 +163,7 @@ namespace GraphicsPractical2
         protected override void Draw(GameTime gameTime)
         {
             // Clear the screen in a predetermined color and clear the depth buffer
-            this.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DeepSkyBlue, 1.0f, 0);           
+            this.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DeepSkyBlue, 1.0f, 0);
 
             // Get the model's only mesh
             ModelMesh mesh = this.model.Meshes[0];
@@ -157,7 +176,7 @@ namespace GraphicsPractical2
             this.camera.SetEffectParameters(effect);
             effect.Parameters["World"].SetValue(World);
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
-            
+
             // Draw the quad 
             effect.Parameters["HasTexture"].SetValue(true);
             foreach (EffectPass p in effect.CurrentTechnique.Passes)
@@ -168,8 +187,23 @@ namespace GraphicsPractical2
             // Draw the model
             effect.Parameters["HasTexture"].SetValue(false);
             mesh.Draw();
-
+            
             base.Draw(gameTime);
+        }
+
+        protected void DrawToTexture(RenderTarget2D renderTarget, ModelMesh mesh, Matrix world)
+        {
+            // Prepare everything we want to draw
+            Effect effect = mesh.Effects[0];
+
+            // Set the render target.
+            GraphicsDevice.SetRenderTarget(renderTarget);
+
+            GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+
+            // Draw the scene
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
         }
     }
 }
