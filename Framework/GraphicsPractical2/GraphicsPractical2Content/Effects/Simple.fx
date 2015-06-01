@@ -147,7 +147,11 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 		}
 
 	if (HasTexture)
+	{
 		output.UVcoords = input.UVcoords;
+		output.Color = DiffuseLighting(LightPosition, transformNormalN) +
+			SpecularLighting(LightPosition, CameraPosition, input.Position3D, transformNormalN);
+	}
 
 	return output;
 }

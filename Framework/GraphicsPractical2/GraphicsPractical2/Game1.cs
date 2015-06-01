@@ -200,7 +200,7 @@ namespace GraphicsPractical2
             GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true  };
 
             // Draw the scene
-            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1.0f, 0);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DeepSkyBlue, 1.0f, 0);
 
             // The Quad
             effect.Parameters["HasTexture"].SetValue(true);
