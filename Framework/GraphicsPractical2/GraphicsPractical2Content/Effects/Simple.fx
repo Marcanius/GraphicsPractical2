@@ -11,8 +11,8 @@ float4x4 View, Projection, World, WorldIT;
 float4 DiffuseColor, AmbientColor, SpecularColor;
 float3 LightPosition, CameraPosition;
 float DiffuseIntensity, AmbientIntensity, SpecularIntensity, SpecularPower;
-bool HasTexture, NormalColoring, ProceduralColoring;
-Texture2D DiffuseTexture;
+bool HasTexture, NormalColoring, ProceduralColoring, HasNormalMap;
+Texture2D DiffuseTexture, BumpMap;
 SamplerState cobblestoneSample;
 
 //---------------------------------- Input / Output structures ----------------------------------
@@ -24,6 +24,8 @@ struct VertexShaderInput
 {
 	float4 Position3D : POSITION0;
 	float4 Normal : NORMAL0;
+	float4 Tangent : TANGENT0;
+	float4 BiNormal : BINORMAL0;
 	float2 UVcoords : TEXCOORD0;
 };
 
@@ -40,8 +42,11 @@ struct VertexShaderOutput
 	float4 Position2D : POSITION0;
 	float4 Color : COLOR0;
 	float4 Color2: COLOR1;
-	float2 ProceduralCoord : TEXCOORD0;
-	float2 UVcoords : TEXCOORD1;
+	float4 Normal : TEXCOORD0;
+	float4 Tangent : TEXCOORD1;
+	float4 BiNormal : TEXCOORD2;
+	float2 ProceduralCoord : TEXCOORD3;
+	float2 UVcoords : TEXCOORD4;
 };
 
 //------------------------------------------ Functions ------------------------------------------
@@ -77,11 +82,10 @@ float4 ProceduralColor(VertexShaderOutput input, float x, float y)
 }
 
 // Transforming the normals, using the Inverse-Transposed World Matrix
-float3 TransformNormal(VertexShaderInput Input)
+float4 TransformVector(float4 Input)
 {
-	float3x3 rotationAndScale = WorldIT;
-		float3 normalT = mul(Input.Normal, rotationAndScale);
-		return normalize(normalT);
+	float4 vectorT = mul(Input, WorldIT);
+	return normalize(vectorT);
 }
 
 // Ambient Shading
@@ -128,7 +132,8 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 		output.Position2D = mul(viewPosition, Projection);
 
 	// Matrixing the normal Vector.
-	float3 transformNormalN = TransformNormal(input);
+	float3 transformNormalN = TransformVector(input.Normal);
+		output.Tangent = TransformVector(input.Tangent);
 
 		// Outputting the color.
 		if (NormalColoring)
@@ -161,7 +166,24 @@ float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 	// The Quad
 	if (HasTexture)
 	{
-		return DiffuseTexture.Sample(cobblestoneSample, input.UVcoords);
+		float4 textureColor = DiffuseTexture.Sample(cobblestoneSample, input.UVcoords);
+
+		if (!HasNormalMap)
+		{
+			return textureColor;
+		}
+		else
+		{
+			float4 bumpColor = BumpMap.Sample(cobblestoneSample, input.UVcoords);
+				// Expand to (-1, +1) range
+				bumpColor = (bumpColor * 2.0f) - 1.0f;
+			float4 bumpNormal = (bumpColor.x * input.Tangent) + (bumpColor.y * input.BiNormal) + 
+								(bumpColor.z * input.Normal);
+			// Normalizing the bumpNormal
+			bumpNormal = normalize(bumpNormal);
+
+			return bumpNormal * textureColor * input.Color;
+		}
 	}
 	// Use The normals of the Vertices.
 	else if (NormalColoring)

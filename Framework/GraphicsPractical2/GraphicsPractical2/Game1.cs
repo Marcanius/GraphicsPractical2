@@ -131,6 +131,7 @@ namespace GraphicsPractical2
             this.quadVertices[0].Position = new Vector3(-10, -1.6f, -10);
             this.quadVertices[0].Normal = quadNormal;
             this.quadVertices[0].TextureCoordinate = new Vector2(0, 0);
+            this.quadVertices[0].Tan
             // Top right
             this.quadVertices[1].Position = new Vector3(10, -1.6f, -10);
             this.quadVertices[1].Normal = quadNormal;
