@@ -89,8 +89,6 @@ namespace GraphicsPractical2
             postProcessing = this.Content.Load<Effect>("Effects/PostProcessing");
             postProcessing.Parameters["gamma"].SetValue(1.5f);
 
-            empty = this.Content.Load<Texture2D>("Textures/Empty");
-
             // Filling modelMaterial.
             modelMaterial.NormalColoring = true;
             modelMaterial.ProceduralColoring = false;
@@ -177,17 +175,17 @@ namespace GraphicsPractical2
             effect.Parameters["World"].SetValue(World);
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
 
-            // Draw the quad 
-            effect.Parameters["HasTexture"].SetValue(true);
-            foreach (EffectPass p in effect.CurrentTechnique.Passes)
-                p.Apply();
+            // Create the texture for postprocessing.
+            DrawToTexture(postRenderTarget, mesh, World);
+            // Clear the screen
+            GraphicsDevice.Clear(Color.Black);
+            // Draw the texture
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque,
+                SamplerState.LinearClamp, DepthStencilState.Default,
+                RasterizerState.CullNone, postProcessing);
+            spriteBatch.Draw(postRenderTarget, new Rectangle(0, 0, 800, 600), Color.White);
+            spriteBatch.End();
 
-            this.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, quadVertices, 0, quadVertices.Length, quadIndices, 0, this.quadIndices.Length / 3);
-
-            // Draw the model
-            effect.Parameters["HasTexture"].SetValue(false);
-            mesh.Draw();
-            
             base.Draw(gameTime);
         }
 
@@ -199,11 +197,24 @@ namespace GraphicsPractical2
             // Set the render target.
             GraphicsDevice.SetRenderTarget(renderTarget);
 
-            GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+            GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true  };
 
             // Draw the scene
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1.0f, 0);
 
+            // The Quad
+            effect.Parameters["HasTexture"].SetValue(true);
+            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+                pass.Apply();
+            this.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, quadVertices, 
+                0, quadVertices.Length, quadIndices, 0, this.quadIndices.Length / 3);
+
+            // The Model
+            effect.Parameters["HasTexture"].SetValue(false);
+            mesh.Draw();
+
+            // Drop the render target
+            GraphicsDevice.SetRenderTarget(null);
         }
     }
 }

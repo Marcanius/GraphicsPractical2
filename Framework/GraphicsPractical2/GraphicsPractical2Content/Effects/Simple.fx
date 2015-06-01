@@ -161,14 +161,19 @@ float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 	}
 	// Use The normals of the Vertices.
 	else if (NormalColoring)
+	{
 		return NormalColor(input);
+	}
 	// Use a checkerboard pattern.
 	else if (ProceduralColoring)
+	{
 		return ProceduralColor(input, input.ProceduralCoord.x, input.ProceduralCoord.y);
+	}
 	// Something went wrong, draw White.
 	else
+	{
 		return (float4)1;
-
+	}
 }
 
 technique Simple

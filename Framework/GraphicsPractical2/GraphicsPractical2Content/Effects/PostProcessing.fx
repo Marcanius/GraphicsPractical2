@@ -4,15 +4,12 @@ float4x4 Projection;
 
 float gamma;
 
-struct VertexShaderInput
-{
-	float4 Position : POSITION0;
-};
+// Texture deets
+Texture2D screenGrab;
 
-struct VertexShaderOutput
+sampler TextureSampler = sampler_state
 {
-	float4 Position : POSITION0;
-	float4 Color : COLOR0;
+	Texture = < screenGrab > ;
 };
 
 float4 GammaCorrection(float4 input) : COLOR0
@@ -24,34 +21,30 @@ float4 GammaCorrection(float4 input) : COLOR0
 	// Blue
 	float blue = 1 / pow(input.b, 1 / gamma);
 
-	return ((red, green, blue, 1));
+	// Test
+	red = 0.5;
+	green = 0.8;
+	blue = 0.2;
+
+	return (float4)(0, 0, 0, 1.0);
 }
 
-VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
+float4 PixelShaderFunction(float2 TexCoord : TEXCOORD0) : COLOR0
 {
-	VertexShaderOutput output;
+	float4 input = tex2D(TextureSampler, TexCoord);
 
-	float4 worldPosition = mul(input.Position, World);
-		float4 viewPosition = mul(worldPosition, View);
-		output.Position = mul(viewPosition, Projection);
-
-	output.Color = (float4)1;
+	float4 output = input;
+	output.r = pow(input.r, 1 / gamma);
+	output.g = pow(input.g, 1 / gamma);
+	output.b = pow(input.b, 1 / gamma);
 
 	return output;
-}
-
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
-{
-	//	return GammaCorrection(input.Color);
-
-	return float4(1, 0, 0, 1);
 }
 
 technique Technique1
 {
 	pass Pass1
 	{
-		VertexShader = compile vs_2_0 VertexShaderFunction();
 		PixelShader = compile ps_2_0 PixelShaderFunction();
 	}
 }
