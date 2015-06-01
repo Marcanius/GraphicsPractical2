@@ -87,7 +87,7 @@ namespace GraphicsPractical2
 
             // Load the PostProcesssing effect
             postProcessing = this.Content.Load<Effect>("Effects/PostProcessing");
-            postProcessing.Parameters["gamma"].SetValue(1.5f);
+            postProcessing.Parameters["gamma"].SetValue(1.0f);
 
             // Filling modelMaterial.
             modelMaterial.NormalColoring = true;
