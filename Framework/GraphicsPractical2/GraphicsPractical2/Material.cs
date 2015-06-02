@@ -7,12 +7,6 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GraphicsPractical2
 {
-    /// <summary>
-    /// This struct can be used to make interaction with the effects easier.
-    /// To use this, create a new material and set all the variables you want to share with the effect.
-    /// Then call the SetEffectParameters to set the globals of the effect given using the parameter.
-    /// Make sure to comment all the lines that set effect parameters that are currently not existing in your effect file.
-    /// </summary>
     public struct Material
     {
         // Color of the ambient light
@@ -26,13 +20,6 @@ namespace GraphicsPractical2
         public Color DiffuseColor;
         // The intensity of the diffuse reflection
         public float DiffuseIntensity;
-        // The texture of the surface
-        public Texture DiffuseTexture;
-
-        // The normal displacement texture
-        //public Texture NormalMap;
-        // The normal displacement factor, to apply the effect in a subtle manner
-        //public float DisplacementFactor;
 
         // Color of the specular highlight (mostly equal to the color of the light source)
         public Color SpecularColor;
@@ -47,7 +34,7 @@ namespace GraphicsPractical2
         public bool ProceduralColoring;
 
 
-        // Using this function requires all these elements to be present as top-level variables in the shader code. Comment out the ones that you don't use
+        // Flushes all variables to the given effect.
         public void SetEffectParameters(Effect effect)
         {
             effect.Parameters["AmbientColor"].SetValue(this.AmbientColor.ToVector4());

@@ -32,6 +32,7 @@ struct VertexShaderOutput
 
 //------------------------------------------ Fuctions --------------------------------------
 
+// UNABLE TO FINISH, PLEASE DISREGARD.
 float4 SampleNormalMap(VertexShaderOutput input)
 {
 	return NormalMap.Sample(textureSample, input.UVCoords);
@@ -63,7 +64,7 @@ float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 	// Sample the cobblestone texture.
 	float4 textureColor = DiffuseTexture.Sample(textureSample, input.UVCoords);
 
-	// Apply normalmapping
+	// Apply normalmapping: UNABLE TO FINISH, PLEASE DISREGARD.
 	if (HasNormalMap)
 	{
 		// Create an adjusted normal from the normal map

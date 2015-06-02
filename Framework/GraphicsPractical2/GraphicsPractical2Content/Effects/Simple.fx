@@ -11,13 +11,7 @@ float4x4 View, Projection, World, WorldIT;
 float4 DiffuseColor, AmbientColor, SpecularColor;
 float3 LightPosition, CameraPosition;
 float DiffuseIntensity, AmbientIntensity, SpecularIntensity, SpecularPower;
-bool HasTexture, NormalColoring, ProceduralColoring, HasNormalMap;
-Texture2D DiffuseTexture, NormalMap;
-SamplerState textureSample
-{
-	AddressU = Wrap;
-	AddressV = Wrap;
-};
+bool NormalColoring, ProceduralColoring;
 
 //---------------------------------- Input / Output structures ----------------------------------
 
@@ -26,7 +20,6 @@ struct VertexShaderInput
 {
 	float4 Position3D : POSITION0;
 	float4 Normal : NORMAL0;
-	float2 UVcoord : TEXCOORD0;
 };
 
 // The output of the vertex shader. 
@@ -36,21 +29,14 @@ struct VertexShaderOutput
 	float4 Position2D : POSITION0;
 	float4 Normal : TEXCOORD0;
 	float3 Position3D : TEXCOORD1;
-	float2 UVcoord : TEXCOORD2;
 };
 
 //------------------------------------------ Functions ------------------------------------------
 
-// Coloring using the surface normals.
-float4 NormalColor(VertexShaderOutput input)
-{
-	return input.Normal;
-}
-
 // Coloring using the surface normals, in a checkerboard pattern.
 float4 ProceduralColor(VertexShaderOutput input)
 {
-	// Getting the world space x and y of the vertex
+	// Getting the world space x and y of the vertex.
 	float x = input.Position3D.x;
 	float y = input.Position3D.y;
 
@@ -102,25 +88,9 @@ float SpecularShading(float3 Position, float3 LightPosition, float3 CameraPositi
 		float3 hVector = normalize(lVector + vVector);
 
 		// Angle between the half-Vector and the normal
-		float HdotN = max(0.0000001f, dot(hVector, Normal));
-	
+		float HdotN = max(0.000000001f, dot(hVector, Normal));
+
 	return SpecularIntensity * pow(HdotN, SpecularPower);
-}
-
-float4 NormalMapping(VertexShaderOutput input)
-{
-	float4 surfaceNormal = input.Normal;
-
-		// Get the vectors from the normal map
-		float4 mapNormal = normalize(NormalMap.Sample(textureSample, input.UVcoord));
-		// transform the vector from the normal map, so they align corectly with the surface normals
-		float4 mapNormalT = normalize(mapNormal - (0, 0, 1, 0));
-		// Add the mapNormal and surfaceNormal
-		float4 result = mapNormalT + surfaceNormal;
-		// Normalize the resultNormal;
-		result = normalize(result);
-
-	return result;
 }
 
 //---------------------------------------- Technique: Simple ----------------------------------------
@@ -137,39 +107,25 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 
 	// Matrixing the normal Vector.
 	float3 transformNormalN = normalize(mul((float3)input.Normal, WorldIT));
+		output.Normal.xyz = transformNormalN;
 
-		// The normal used for assignments 1.1 and 1.2.
-		output.Normal = input.Normal;
+	// The normal used for assignments 1.1 and 1.2.
+	output.Normal = input.Normal;
+
+
 	// The world space coordinates of the vertex used for assignment 1.2, and calculating the different shadings.
 	output.Position3D = input.Position3D.xyz;
-	// The UV coordinates used for texture sampling in assignments 3 and 4.2.
-	output.UVcoord = input.UVcoord;
 
 	return output;
 }
 
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
-	//// Drawing the Quad
-	//if (HasTexture)
-	//{
-	//	// Sample the cobblestone texture
-	//	float4 textureColor = DiffuseTexture.Sample(textureSample, input.UVcoord);
-
-	//		if (!HasNormalMap)
-	//		{
-	//			return textureColor;
-	//		}
-	//		else
-	//		{
-	//			return NormalMapping(input);
-	//		}
-	//}
-	// Not drawing the quad, color the teapot using..:
+	// Color the teapot using..:
 	// .. the normals of the vertices.
 	if (NormalColoring)
 	{
-		return NormalColor(input);
+		return input.Normal;
 	}
 
 	// .. a checkerboard pattern and the normals of the vertices.
@@ -177,11 +133,12 @@ float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 	{
 		return ProceduralColor(input);
 	}
+
 	// .. a shaded version of red.
 	else
 	{
-		return AmbientColor * AmbientIntensity 
-			+ DiffuseColor * DiffuseShading(input.Position3D, LightPosition, input.Normal) 
+		return AmbientColor * AmbientIntensity
+			+ DiffuseColor * DiffuseShading(input.Position3D, LightPosition, input.Normal)
 			+ SpecularColor * SpecularShading(input.Position3D, LightPosition, CameraPosition, input.Normal);
 	}
 }
