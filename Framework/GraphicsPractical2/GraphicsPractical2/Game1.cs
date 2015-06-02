@@ -90,7 +90,7 @@ namespace GraphicsPractical2
             postProcessing.Parameters["gamma"].SetValue(1.0f);
 
             // Filling modelMaterial.
-            modelMaterial.NormalColoring = true;
+            modelMaterial.NormalColoring = false;
             modelMaterial.ProceduralColoring = false;
 
             modelMaterial.DiffuseColor = Color.Red;
@@ -131,19 +131,18 @@ namespace GraphicsPractical2
             this.quadVertices[0].Position = new Vector3(-10, -1.6f, -10);
             this.quadVertices[0].Normal = quadNormal;
             this.quadVertices[0].TextureCoordinate = new Vector2(0, 0);
-            this.quadVertices[0].Tan
             // Top right
             this.quadVertices[1].Position = new Vector3(10, -1.6f, -10);
             this.quadVertices[1].Normal = quadNormal;
-            this.quadVertices[1].TextureCoordinate = new Vector2(1, 0);
+            this.quadVertices[1].TextureCoordinate = new Vector2(3, 0);
             // Bottom left
             this.quadVertices[2].Position = new Vector3(-10, -1.6f, 10);
             this.quadVertices[2].Normal = quadNormal;
-            this.quadVertices[2].TextureCoordinate = new Vector2(0, 1);
+            this.quadVertices[2].TextureCoordinate = new Vector2(0, 3);
             // Bottom right
             this.quadVertices[3].Position = new Vector3(10, -1.6f, 10);
             this.quadVertices[3].Normal = quadNormal;
-            this.quadVertices[3].TextureCoordinate = new Vector2(1, 1);
+            this.quadVertices[3].TextureCoordinate = new Vector2(3, 3);
 
             this.quadIndices = new short[] { 0, 1, 2, 1, 2, 3 };
             this.quadTransform = Matrix.CreateScale(scale);
@@ -176,11 +175,12 @@ namespace GraphicsPractical2
             effect.Parameters["World"].SetValue(World);
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
 
-            // Create the texture for postprocessing.
+            // Create the texture for post-processing.
             DrawToTexture(postRenderTarget, mesh, World);
+
             // Clear the screen
             GraphicsDevice.Clear(Color.Black);
-            // Draw the texture
+            // Draw the texture with the post-processing.
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque,
                 SamplerState.LinearClamp, DepthStencilState.Default,
                 RasterizerState.CullNone, postProcessing);
