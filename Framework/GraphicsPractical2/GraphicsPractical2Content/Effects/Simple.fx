@@ -35,11 +35,8 @@ struct VertexShaderOutput
 {
 	float4 Position2D : POSITION0;
 	float4 Normal : TEXCOORD0;
-	float2 ProceduralCoord : TEXCOORD1;
+	float3 Position3D : TEXCOORD1;
 	float2 UVcoord : TEXCOORD2;
-	float4 AmbientColor : TEXCOORD3;
-	float4 DiffuseColor : TEXCOORD4;
-	float4 SpecularColor : TEXCOORD5;
 };
 
 //------------------------------------------ Functions ------------------------------------------
@@ -54,8 +51,8 @@ float4 NormalColor(VertexShaderOutput input)
 float4 ProceduralColor(VertexShaderOutput input)
 {
 	// Getting the world space x and y of the vertex
-	float x = input.ProceduralCoord.x;
-	float y = input.ProceduralCoord.y;
+	float x = input.Position3D.x;
+	float y = input.Position3D.y;
 
 	// Creating a checkerboard by grouping mulitple x's and y's into the correct bit (0 or 1).
 	int checkerX = (int)(abs(x) * 5) % 2;
@@ -83,37 +80,31 @@ float4 ProceduralColor(VertexShaderOutput input)
 	}
 }
 
-// Ambient Shading
-float4 AmbientLighting()
-{
-	return AmbientColor * AmbientIntensity;
-}
-
 // Lambert Shading
-float4 DiffuseLighting(float3 LightPosition, float3 VertexPosition, float3 Normal)
+float DiffuseShading(float3 Position, float3 LightPosition, float3 Normal)
 {
 	// The angle between the light source and the normal vector of the vertex.
-	float LdotNN = dot(normalize(LightPosition - VertexPosition), Normal);
+	float LdotNN = dot(normalize(LightPosition - Position), Normal);
 
-	return DiffuseColor * DiffuseIntensity * max(0.0f, LdotNN);
+	return DiffuseIntensity * max(0.0f, LdotNN);
 }
 
 // Blinn-Phong Shading
-float4 SpecularLighting(float3 LightPosition, float3 CameraPosition, float3 VertexPosition, float3 Normal)
+float SpecularShading(float3 Position, float3 LightPosition, float3 CameraPosition, float3 Normal)
 {
 	// Calculate the vector to the light source, and normalize it.
-	float3 lVector = normalize(LightPosition - VertexPosition);
+	float3 lVector = normalize(LightPosition - Position);
 
 		// Calculate the vector to the camera, and normalize it.
-		float3 vVector = normalize(CameraPosition - VertexPosition);
+		float3 vVector = normalize(CameraPosition - Position);
 
 		// Calculate the half vector, halfway between the light source and the camera.
 		float3 hVector = normalize(lVector + vVector);
 
 		// Angle between the half-Vector and the normal
-		float HdotN = max(0.0f, dot(hVector, Normal));
-
-	return SpecularColor * SpecularIntensity * pow(HdotN, SpecularPower);
+		float HdotN = max(0.0000001f, dot(hVector, Normal));
+	
+	return SpecularIntensity * pow(HdotN, SpecularPower);
 }
 
 float4 NormalMapping(VertexShaderOutput input)
@@ -149,38 +140,34 @@ VertexShaderOutput SimpleVertexShader(VertexShaderInput input)
 
 		// The normal used for assignments 1.1 and 1.2.
 		output.Normal = input.Normal;
-	// The procedural coordinates used for assignment 1.2.
-	output.ProceduralCoord = input.Position3D.xy;
+	// The world space coordinates of the vertex used for assignment 1.2, and calculating the different shadings.
+	output.Position3D = input.Position3D.xyz;
 	// The UV coordinates used for texture sampling in assignments 3 and 4.2.
 	output.UVcoord = input.UVcoord;
-	// The shaded color used in assignments 2.1 and beyond.
-	output.AmbientColor = AmbientLighting();
-	output.DiffuseColor = DiffuseLighting(LightPosition, input.Position3D, transformNormalN);
-	output.SpecularColor = SpecularLighting(LightPosition, CameraPosition, input.Position3D, transformNormalN);
 
 	return output;
 }
 
 float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 {
-	// Drawing the Quad
-	if (HasTexture)
-	{
-		// Sample the cobblestone texture
-		float4 textureColor = DiffuseTexture.Sample(textureSample, input.UVcoord);
+	//// Drawing the Quad
+	//if (HasTexture)
+	//{
+	//	// Sample the cobblestone texture
+	//	float4 textureColor = DiffuseTexture.Sample(textureSample, input.UVcoord);
 
-			if (!HasNormalMap)
-			{
-				return textureColor;
-			}
-			else
-			{
-				return NormalMapping(input);
-			}
-	}
+	//		if (!HasNormalMap)
+	//		{
+	//			return textureColor;
+	//		}
+	//		else
+	//		{
+	//			return NormalMapping(input);
+	//		}
+	//}
 	// Not drawing the quad, color the teapot using..:
 	// .. the normals of the vertices.
-	else if (NormalColoring)
+	if (NormalColoring)
 	{
 		return NormalColor(input);
 	}
@@ -193,7 +180,9 @@ float4 SimplePixelShader(VertexShaderOutput input) : COLOR0
 	// .. a shaded version of red.
 	else
 	{
-		return input.AmbientColor + input.DiffuseColor + input.SpecularColor;
+		return AmbientColor * AmbientIntensity 
+			+ DiffuseColor * DiffuseShading(input.Position3D, LightPosition, input.Normal) 
+			+ SpecularColor * SpecularShading(input.Position3D, LightPosition, CameraPosition, input.Normal);
 	}
 }
 

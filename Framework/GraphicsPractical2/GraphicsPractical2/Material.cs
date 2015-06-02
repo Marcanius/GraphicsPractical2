@@ -56,10 +56,6 @@ namespace GraphicsPractical2
             effect.Parameters["LightPosition"].SetValue(this.LightPosition);
             effect.Parameters["DiffuseColor"].SetValue(this.DiffuseColor.ToVector4());
             effect.Parameters["DiffuseIntensity"].SetValue(this.DiffuseIntensity);
-            effect.Parameters["DiffuseTexture"].SetValue(this.DiffuseTexture);
-
-            //effect.Parameters["NormalMap"].SetValue(this.NormalMap);
-            //effect.Parameters["DisplacementFactor"].SetValue(this.DisplacementFactor);
 
             effect.Parameters["SpecularColor"].SetValue(this.SpecularColor.ToVector4());
             effect.Parameters["SpecularIntensity"].SetValue(this.SpecularIntensity);
@@ -67,9 +63,6 @@ namespace GraphicsPractical2
 
             effect.Parameters["NormalColoring"].SetValue(this.NormalColoring);
             effect.Parameters["ProceduralColoring"].SetValue(this.ProceduralColoring);
-
-            effect.Parameters["HasTexture"].SetValue(this.DiffuseTexture != null);
-            //effect.Parameters["HasNormalMap"].SetValue(this.NormalMap != null);
         }
     }
 }

@@ -26,6 +26,7 @@ namespace GraphicsPractical2
         private Material modelMaterial;
 
         // Quad
+        private Effect QuadEffect;
         private VertexPositionNormalTexture[] quadVertices;
         private short[] quadIndices;
         private Matrix quadTransform;
@@ -76,18 +77,14 @@ namespace GraphicsPractical2
 
         protected override void LoadContent()
         {
-            // Create a SpriteBatch object
+            // Create a SpriteBatch object.
             this.spriteBatch = new SpriteBatch(this.GraphicsDevice);
 
-            // Load the texture for the quad
+            // Load the texture for the quad.
             cobblestone = Content.Load<Texture2D>("Textures/CobblestonesDiffuse");
 
-            // Load the "Simple" effect
+            // Load the "Simple" effect.
             Effect effect = this.Content.Load<Effect>("Effects/Simple");
-
-            // Load the PostProcesssing effect
-            postProcessing = this.Content.Load<Effect>("Effects/PostProcessing");
-            postProcessing.Parameters["gamma"].SetValue(1.0f);
 
             // Filling modelMaterial.
             modelMaterial.NormalColoring = false;
@@ -105,11 +102,25 @@ namespace GraphicsPractical2
             modelMaterial.SpecularIntensity = 2.0f;
             modelMaterial.SpecularPower = 25.0f;
 
+            // Flushing the modelMaterial to the effect.
             modelMaterial.SetEffectParameters(effect);
 
-            // Load the model and let it use the "Simple" effect
+            // Load the model and let it use the "Simple" effect.
             this.model = this.Content.Load<Model>("Models/Teapot");
             this.model.Meshes[0].MeshParts[0].Effect = effect;
+
+            // Load the "Quad" Effect.
+            QuadEffect = this.Content.Load<Effect>("Effects/QuadEffect");
+            // Fill the Quad Effect Parameters.
+            camera.SetEffectParameters(QuadEffect);
+            QuadEffect.Parameters["World"].SetValue(Matrix.CreateScale(10f));
+            QuadEffect.Parameters["DiffuseTexture"].SetValue(Content.Load<Texture2D>("Textures/CobblestonesDiffuse"));
+            QuadEffect.Parameters["NormalMap"].SetValue(Content.Load<Texture2D>("Normal Maps/CobblestonesNormal"));
+            QuadEffect.Parameters["HasNormalMap"].SetValue(true);
+
+            // Load the PostProcesssing effect
+            postProcessing = this.Content.Load<Effect>("Effects/PostProcessing");
+            postProcessing.Parameters["gamma"].SetValue(1.0f);
 
             // Setup the quad
             this.setupQuad();
@@ -176,7 +187,7 @@ namespace GraphicsPractical2
             effect.Parameters["WorldIT"].SetValue(Matrix.Transpose(Matrix.Invert(World)));
 
             // Create the texture for post-processing.
-            DrawToTexture(postRenderTarget, mesh, World);
+            DrawToTexture(postRenderTarget, this.model, World);
 
             // Clear the screen
             GraphicsDevice.Clear(Color.Black);
@@ -190,10 +201,12 @@ namespace GraphicsPractical2
             base.Draw(gameTime);
         }
 
-        protected void DrawToTexture(RenderTarget2D renderTarget, ModelMesh mesh, Matrix world)
+        protected void DrawToTexture(RenderTarget2D renderTarget, Model model, Matrix world)
         {
             // Prepare everything we want to draw
-            Effect effect = mesh.Effects[0];
+            ModelMesh mesh = model.Meshes[0];
+            Effect meshEffect = mesh.Effects[0];
+            model.Meshes[0].MeshParts[0].Effect = QuadEffect;
 
             // Set the render target.
             GraphicsDevice.SetRenderTarget(renderTarget);
@@ -204,14 +217,17 @@ namespace GraphicsPractical2
             GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.DeepSkyBlue, 1.0f, 0);
 
             // The Quad
-            effect.Parameters["HasTexture"].SetValue(true);
-            foreach (EffectPass pass in effect.CurrentTechnique.Passes)
+            QuadEffect.CurrentTechnique = QuadEffect.Techniques["Technique1"];
+
+            foreach (EffectPass pass in QuadEffect.CurrentTechnique.Passes)
                 pass.Apply();
+
             this.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, quadVertices, 
                 0, quadVertices.Length, quadIndices, 0, this.quadIndices.Length / 3);
 
+            model.Meshes[0].MeshParts[0].Effect = meshEffect;
             // The Model
-            effect.Parameters["HasTexture"].SetValue(false);
+            meshEffect.Parameters["HasTexture"].SetValue(false);
             mesh.Draw();
 
             // Drop the render target
